@@ -1,0 +1,6 @@
+ignoredBuiltDependencies:
+  - sharp
+  - unrs-resolver
+
+allowedBuiltDependencies:
+  - better-sqlite3

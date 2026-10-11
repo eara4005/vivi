@@ -1,0 +1,69 @@
+# CI: Lint, TypeCheck, Build
+# PRとmainブランチへのpushで実行
+#
+# 構成:
+#   - lint-typecheck: ESLint + TypeScript型検査
+#   - build: Next.jsビルド確認
+#
+# シークレット設定は不要 (ビルド確認のみ)
+# APIキーはVercel等の環境変数で管理
+
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type check
+        run: pnpm exec tsc --noEmit
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: lint-typecheck
+    env:
+      # ビルド確認用のダミー値 (実際の値はデプロイ環境で設定)
+      ANTHROPIC_API_KEY: dummy
+      NEXTAUTH_SECRET: dummy_secret_for_ci
+      NEXTAUTH_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
